@@ -9,11 +9,18 @@ import time
 import functools
 import numbers
 import datetime
+import logging
 
 import zc.lockfile
 
 from . import timing
 from .py26compat import total_seconds
+
+# disable the error reporting in zc.lockfile because it will
+#  just spew errors as we repeatedly attempt to acquire an
+#  unavailable lock.
+logging.getLogger('zc.lockfile').setLevel(logging.ERROR+1)
+
 
 class FileLockTimeout(Exception):
     pass
