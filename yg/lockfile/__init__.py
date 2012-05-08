@@ -7,8 +7,13 @@ Cross-platform file lock context
 import os
 import time
 import functools
+import numbers
+import datetime
 
 import zc.lockfile
+
+from . import timing
+from .py26compat import total_seconds
 
 class FileLockTimeout(Exception):
     pass
@@ -29,8 +34,15 @@ class FileLock(object):
         """
         Construct a FileLock. Specify the file to lock and optionally
         the maximum timeout and the delay between each attempt to lock.
+
+        Timeout and delay can be given in numeric seconds or as
+        `datetime.timedelta` objects.
         """
         self.lockfile = lockfile
+        if isinstance(timeout, numbers.Number):
+            timeout = datetime.timedelta(seconds=timeout)
+        if isinstance(delay, numbers.Number):
+            delay = datetime.timedelta(seconds=delay)
         self.timeout = timeout
         self.delay = delay
 
@@ -44,17 +56,17 @@ class FileLock(object):
         Errors opening the lock file (other than if it exists) are
         passed through.
         """
-        start_time = time.time()
+        stopwatch = timing.Stopwatch()
         attempt = functools.partial(zc.lockfile.LockFile, self.lockfile)
         while True:
             try:
                 self.lock = attempt()
                 break
             except zc.lockfile.LockError:
-                timeout_expired = time.time()-start_time >= self.timeout
+                timeout_expired = stopwatch.split() >= self.timeout
                 if timeout_expired:
                     raise FileLockTimeout()
-                time.sleep(self.delay)
+                time.sleep(total_seconds(self.delay))
 
     def is_locked(self):
         return hasattr(self, 'lock')
