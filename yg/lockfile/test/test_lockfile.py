@@ -57,7 +57,7 @@ def test_FileLock_process_killed():
     tfile, filename = tempfile.mkstemp()
     os.close(tfile)
     os.remove(filename)
-    cmd = [sys.executable, '-u', '-c', 'from eggmonster.concurrency '
+    cmd = [sys.executable, '-u', '-c', 'from yg.lockfile '
         'import FileLock; import time; l = FileLock(%(filename)r); '
         'l.acquire(); print "acquired", l.lockfile; '
         '[time.sleep(1) for x in xrange(10)]' % vars()]
@@ -70,4 +70,5 @@ def test_FileLock_process_killed():
     py.test.raises(FileLockTimeout, l.acquire)
     proc.kill()
     time.sleep(.5)
-    l.acquire(); l.release()
+    l.acquire()
+    l.release()
