@@ -6,6 +6,7 @@ import itertools
 import tempfile
 import time
 import sys
+import textwrap
 
 import py.test
 
@@ -57,10 +58,17 @@ def test_FileLock_process_killed():
     tfile, filename = tempfile.mkstemp()
     os.close(tfile)
     os.remove(filename)
-    cmd = [sys.executable, '-u', '-c', 'from yg.lockfile '
-        'import FileLock; import time; l = FileLock(%(filename)r); '
-        'l.acquire(); print "acquired", l.lockfile; '
-        '[time.sleep(1) for x in xrange(10)]' % vars()]
+    script = textwrap.dedent("""
+        from yg.lockfile import FileLock
+        import time
+        l = FileLock({filename!r})
+        l.acquire()
+        print "acquired", l.lockfile
+        [time.sleep(1) for x in xrange(10)]
+        """).format(**locals())
+    script_lines = script.strip().split('\n')
+    script_cmd = '; '.join(script_lines)
+    cmd = [sys.executable, '-u', '-c', script_cmd]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out = itertools.takewhile(lambda l: 'acquired' not in l,
         lines(proc.stdout))
