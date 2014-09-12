@@ -37,18 +37,21 @@ def lines(stream):
     line-buffered output from a sub-process, so I grab the output byte
     by byte and assemble it into lines.
     """
-    buf = ''
+    buf = b''
     while True:
         dat = stream.read(1)
         if dat:
             buf += dat
-            if dat == '\n':
+            if dat == b'\n':
                 yield buf
-                buf = ''
+                buf = b''
         if not dat and buf:
             yield buf
         if not dat:
             break
+
+def decoded_lines(stream):
+    return (line.decode('utf-8-sig') for line in lines(stream))
 
 def test_FileLock_process_killed():
     """
@@ -71,8 +74,8 @@ def test_FileLock_process_killed():
     script_cmd = '; '.join(script_lines)
     cmd = [sys.executable, '-u', '-c', script_cmd]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    out = itertools.takewhile(lambda l: 'acquired' not in l,
-        lines(proc.stdout))
+    lines = decoded_lines(proc.stdout)
+    out = itertools.takewhile(lambda l: 'acquired' not in l, lines)
     tuple(out) # wait for 'acquired' to be printed by subprocess
 
     l = FileLock(filename, timeout=0.2)
