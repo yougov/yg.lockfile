@@ -68,7 +68,7 @@ def test_FileLock_process_killed():
         l = FileLock({filename!r})
         l.acquire()
         print("acquired", l.lockfile)
-        [time.sleep(1) for x in xrange(10)]
+        [time.sleep(1) for x in range(10)]
         """).format(**locals())
     script_lines = script.strip().split('\n')
     script_cmd = '; '.join(script_lines)
