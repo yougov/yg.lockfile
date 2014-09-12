@@ -14,7 +14,6 @@ import logging
 import zc.lockfile
 
 from . import timing
-from .py26compat import total_seconds
 
 # disable the error reporting in zc.lockfile because it will
 #  just spew errors as we repeatedly attempt to acquire an
@@ -96,7 +95,7 @@ class FileLock(LockBase):
                 timeout_expired = stopwatch.split() >= self.timeout
                 if timeout_expired:
                     raise FileLockTimeout()
-                time.sleep(total_seconds(self.delay))
+                time.sleep(self.delay.total_seconds())
 
     def is_locked(self):
         return hasattr(self, 'lock')
@@ -142,7 +141,7 @@ class ExclusiveContext(LockBase):
                 timeout_expired = stopwatch.split() >= self.timeout
                 if timeout_expired:
                     raise FileLockTimeout()
-                time.sleep(total_seconds(self.delay))
+                time.sleep(self.delay.total_seconds())
 
     def is_locked(self):
         return hasattr(self, 'lock')
