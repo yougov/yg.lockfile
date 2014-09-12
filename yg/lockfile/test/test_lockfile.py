@@ -59,11 +59,12 @@ def test_FileLock_process_killed():
     os.close(tfile)
     os.remove(filename)
     script = textwrap.dedent("""
+        from __future__ import print_function
         from yg.lockfile import FileLock
         import time
         l = FileLock({filename!r})
         l.acquire()
-        print "acquired", l.lockfile
+        print("acquired", l.lockfile)
         [time.sleep(1) for x in xrange(10)]
         """).format(**locals())
     script_lines = script.strip().split('\n')
