@@ -8,7 +8,7 @@ import time
 import sys
 import textwrap
 
-import py.test
+import pytest
 
 from yg.lockfile import FileLock, FileLockTimeout
 
@@ -25,7 +25,8 @@ def test_FileLock_basic():
     assert not l.is_locked()
     with l:
         assert os.path.isfile(filename)
-        py.test.raises(FileLockTimeout, l2.acquire)
+        with pytest.raises(FileLockTimeout):
+            l2.acquire()
     assert not l.is_locked()
     l2.acquire()
     assert l2.is_locked()
@@ -79,7 +80,8 @@ def test_FileLock_process_killed():
     tuple(out) # wait for 'acquired' to be printed by subprocess
 
     l = FileLock(filename, timeout=0.2)
-    py.test.raises(FileLockTimeout, l.acquire)
+    with pytest.raises(FileLockTimeout):
+        l.acquire()
     proc.kill()
     time.sleep(.5)
     l.acquire()
