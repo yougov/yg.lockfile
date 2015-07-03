@@ -12,8 +12,8 @@ import datetime
 import logging
 
 import zc.lockfile
+from jaraco import timing
 
-from . import timing
 
 # disable the error reporting in zc.lockfile because it will
 #  just spew errors as we repeatedly attempt to acquire an

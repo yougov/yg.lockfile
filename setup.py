@@ -33,6 +33,7 @@ setup_params = dict(
 	],
 	install_requires=[
 		'zc.lockfile',
+		'jaraco.timing',
 	],
 )
 if __name__ == '__main__':
