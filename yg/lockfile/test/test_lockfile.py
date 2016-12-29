@@ -1,5 +1,3 @@
-from __future__ import with_statement
-
 import os
 import subprocess
 import itertools
@@ -11,6 +9,7 @@ import textwrap
 import pytest
 
 from yg.lockfile import FileLock, FileLockTimeout
+
 
 def test_FileLock_basic():
     tfile, filename = tempfile.mkstemp()
