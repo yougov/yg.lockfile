@@ -1,3 +1,8 @@
+2.2.2
+=====
+
+Correct badges in README.
+
 2.2.1
 =====
 

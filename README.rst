@@ -1,12 +1,12 @@
-.. image:: https://img.shields.io/pypi/v/skeleton.svg
-   :target: https://pypi.org/project/skeleton
+.. image:: https://img.shields.io/pypi/v/yg.lockfile.svg
+   :target: https://pypi.org/project/yg.lockfile
 
-.. image:: https://img.shields.io/pypi/pyversions/skeleton.svg
+.. image:: https://img.shields.io/pypi/pyversions/yg.lockfile.svg
 
-.. image:: https://img.shields.io/pypi/dm/skeleton.svg
+.. image:: https://img.shields.io/pypi/dm/yg.lockfile.svg
 
-.. image:: https://img.shields.io/travis/jaraco/skeleton/master.svg
-   :target: http://travis-ci.org/jaraco/skeleton
+.. image:: https://img.shields.io/travis/yougov/yg.lockfile/master.svg
+   :target: http://travis-ci.org/yougov/yg.lockfile
 
 A FileLock class that implements a context manager with timeouts on top of
 `zc.lockfile`, an excellent, cross-platorm implementation of file locking.
