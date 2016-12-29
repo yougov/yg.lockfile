@@ -1,3 +1,10 @@
+2.2.1
+=====
+
+#2: Suppress errors in the rare condition where the lockfile has
+disappeared between the release of the lock and the deletion of
+the file.
+
 2.2
 ===
 

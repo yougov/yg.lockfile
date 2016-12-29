@@ -16,6 +16,12 @@ wheel = ['wheel'] if needs_wheel else []
 name = 'yg.lockfile'
 description = 'Lockfile object with timeouts and context manager'
 
+py33_markers = [
+	'python_version=="{ver}"'.format(**locals())
+	for ver in ('3.3', '3.2', '2.7')
+]
+py33 = ':' + ' or '.join(py33_markers)
+
 setup_params = dict(
 	name=name,
 	use_scm_version=True,
@@ -32,6 +38,9 @@ setup_params = dict(
 		'jaraco.timing',
 	],
 	extras_require={
+		py33: [
+			"contextlib2>=0.5",
+		],
 	},
 	setup_requires=[
 		'setuptools_scm>=1.15.0',

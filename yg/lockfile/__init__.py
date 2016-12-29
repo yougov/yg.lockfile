@@ -14,6 +14,8 @@ import logging
 import zc.lockfile
 from jaraco import timing
 
+from . import py33compat
+
 
 # disable the error reporting in zc.lockfile because it will
 #  just spew errors as we repeatedly attempt to acquire an
@@ -107,7 +109,8 @@ class FileLock(LockBase):
         if self.is_locked():
             self.lock.close()
             del self.lock
-            os.remove(self.lockfile)
+            with py33compat.suppress_file_not_found():
+                os.remove(self.lockfile)
 
 
 class ExclusiveContext(LockBase):
