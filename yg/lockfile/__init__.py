@@ -13,6 +13,7 @@ import logging
 
 import zc.lockfile
 from jaraco import timing
+from jaraco.functools import retry_call
 
 from . import py33compat
 
@@ -52,6 +53,12 @@ class LockBase(object):
         """
         self.release()
 
+    def _check_timeout(self, stopwatch):
+        timeout_expired = stopwatch.split() >= self.timeout
+        if timeout_expired:
+            raise FileLockTimeout()
+        time.sleep(self.delay.total_seconds())
+
 
 class FileLock(LockBase):
     """
@@ -87,17 +94,12 @@ class FileLock(LockBase):
         Errors opening the lock file (other than if it exists) are
         passed through.
         """
-        stopwatch = timing.Stopwatch()
-        attempt = functools.partial(zc.lockfile.LockFile, self.lockfile)
-        while True:
-            try:
-                self.lock = attempt()
-                break
-            except zc.lockfile.LockError:
-                timeout_expired = stopwatch.split() >= self.timeout
-                if timeout_expired:
-                    raise FileLockTimeout()
-                time.sleep(self.delay.total_seconds())
+        self.lock = retry_call(
+            functools.partial(zc.lockfile.LockFile, self.lockfile),
+            retries=float('inf'),
+            trap=zc.lockfile.LockError,
+            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
+        )
 
     def is_locked(self):
         return hasattr(self, 'lock')
@@ -134,17 +136,12 @@ class ExclusiveContext(LockBase):
         Errors opening the lock file (other than if it exists) are
         passed through.
         """
-        stopwatch = timing.Stopwatch()
-        attempt = functools.partial(zc.lockfile._lock_file, self.file)
-        while True:
-            try:
-                self.lock = attempt()
-                break
-            except zc.lockfile.LockError:
-                timeout_expired = stopwatch.split() >= self.timeout
-                if timeout_expired:
-                    raise FileLockTimeout()
-                time.sleep(self.delay.total_seconds())
+        self.lock = retry_call(
+            functools.partial(zc.lockfile._lock_file, self.file),
+            retries=float('inf'),
+            trap=zc.lockfile.LockError,
+            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
+        )
 
     def is_locked(self):
         return hasattr(self, 'lock')
