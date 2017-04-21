@@ -88,6 +88,9 @@ class LockBase(object):
         lock = vars(self).pop('lock', missing)
         lock is not missing and self._release(lock)
 
+    def is_locked(self):
+        return hasattr(self, 'lock')
+
 
 class FileLock(LockBase):
     """
@@ -116,9 +119,6 @@ class FileLock(LockBase):
     def _attempt(self):
         return zc.lockfile.LockFile(self.lockfile)
 
-    def is_locked(self):
-        return hasattr(self, 'lock')
-
     def _release(self, lock):
         lock.close()
         with py33compat.suppress_file_not_found():
@@ -138,9 +138,6 @@ class ExclusiveContext(LockBase):
 
     def _attempt(self):
         zc.lockfile._lock_file(self.file)
-
-    def is_locked(self):
-        return hasattr(self, 'lock')
 
     def _release(self, lock):
         zc.lockfile._unlock_file(self.file)
