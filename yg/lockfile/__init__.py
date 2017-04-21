@@ -13,6 +13,7 @@ import logging
 
 import zc.lockfile
 from jaraco import timing
+from jaraco.functools import retry_call
 
 from . import py33compat
 
@@ -25,6 +26,11 @@ logging.getLogger('zc.lockfile').setLevel(logging.ERROR+1)
 
 class FileLockTimeout(Exception):
     pass
+
+
+missing = object()
+"Sentinel for a missing attribute."
+
 
 class LockBase(object):
     def __init__(self, timeout=10, delay=.05):
@@ -52,6 +58,39 @@ class LockBase(object):
         """
         self.release()
 
+    def _check_timeout(self, stopwatch):
+        timeout_expired = stopwatch.split() >= self.timeout
+        if timeout_expired:
+            raise FileLockTimeout()
+        time.sleep(self.delay.total_seconds())
+
+    def acquire(self):
+        """
+        Attempt to acquire the lock every `delay` seconds until the
+        lock is acquired or until `timeout` has expired.
+
+        Raises FileLockTimeout if the timeout is exceeded.
+
+        Errors opening the lock file (other than if it exists) are
+        passed through.
+        """
+        self.lock = retry_call(
+            self._attempt,
+            retries=float('inf'),
+            trap=zc.lockfile.LockError,
+            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
+        )
+
+    def release(self):
+        """
+        Release the lock and cleanup
+        """
+        lock = vars(self).pop('lock', missing)
+        lock is not missing and self._release(lock)
+
+    def is_locked(self):
+        return hasattr(self, 'lock')
+
 
 class FileLock(LockBase):
     """
@@ -77,40 +116,13 @@ class FileLock(LockBase):
         self.lockfile = lockfile
         super(FileLock, self).__init__(*args, **kwargs)
 
-    def acquire(self):
-        """
-        Attempt to acquire the lock every `delay` seconds until the
-        lock is acquired or until `timeout` has expired.
+    def _attempt(self):
+        return zc.lockfile.LockFile(self.lockfile)
 
-        Raises FileLockTimeout if the timeout is exceeded.
-
-        Errors opening the lock file (other than if it exists) are
-        passed through.
-        """
-        stopwatch = timing.Stopwatch()
-        attempt = functools.partial(zc.lockfile.LockFile, self.lockfile)
-        while True:
-            try:
-                self.lock = attempt()
-                break
-            except zc.lockfile.LockError:
-                timeout_expired = stopwatch.split() >= self.timeout
-                if timeout_expired:
-                    raise FileLockTimeout()
-                time.sleep(self.delay.total_seconds())
-
-    def is_locked(self):
-        return hasattr(self, 'lock')
-
-    def release(self):
-        """
-        Release the lock and delete the lockfile.
-        """
-        if self.is_locked():
-            self.lock.close()
-            del self.lock
-            with py33compat.suppress_file_not_found():
-                os.remove(self.lockfile)
+    def _release(self, lock):
+        lock.close()
+        with py33compat.suppress_file_not_found():
+            os.remove(self.lockfile)
 
 
 class ExclusiveContext(LockBase):
@@ -124,35 +136,8 @@ class ExclusiveContext(LockBase):
         self.file = file
         super(ExclusiveContext, self).__init__(*args, **kwargs)
 
-    def acquire(self):
-        """
-        Attempt to acquire the lock every `delay` seconds until the
-        lock is acquired or until `timeout` has expired.
+    def _attempt(self):
+        zc.lockfile._lock_file(self.file)
 
-        Raises FileLockTimeout if the timeout is exceeded.
-
-        Errors opening the lock file (other than if it exists) are
-        passed through.
-        """
-        stopwatch = timing.Stopwatch()
-        attempt = functools.partial(zc.lockfile._lock_file, self.file)
-        while True:
-            try:
-                self.lock = attempt()
-                break
-            except zc.lockfile.LockError:
-                timeout_expired = stopwatch.split() >= self.timeout
-                if timeout_expired:
-                    raise FileLockTimeout()
-                time.sleep(self.delay.total_seconds())
-
-    def is_locked(self):
-        return hasattr(self, 'lock')
-
-    def release(self):
-        """
-        Release the lock and delete the lockfile.
-        """
-        if self.is_locked():
-            zc.lockfile._unlock_file(self.file)
-            del self.lock
+    def _release(self, lock):
+        zc.lockfile._unlock_file(self.file)
