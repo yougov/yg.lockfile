@@ -54,17 +54,6 @@ def decoded_lines(stream):
     return (line.decode('utf-8-sig') for line in lines(stream))
 
 
-def _eggs_env():
-    """
-    When running under setup.py test, dependencies are loaded dynamically.
-    As a result, a subprocess will not have the necessary dependencies.
-    Return an environment in which those dynamic dependencies will be
-    included.
-    """
-    local_eggs = [egg for egg in sys.path if '.eggs' in egg]
-    return dict(PYTHONPATH=os.pathsep.join(local_eggs))
-
-
 def test_FileLock_process_killed():
     """
     If a subprocess fails to release the lock, it should be released
@@ -85,7 +74,7 @@ def test_FileLock_process_killed():
     script_lines = script.strip().split('\n')
     script_cmd = '; '.join(script_lines)
     cmd = [sys.executable, '-u', '-c', script_cmd]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=_eggs_env())
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lines = decoded_lines(proc.stdout)
     out = itertools.takewhile(lambda l: 'acquired' not in l, lines)
     tuple(out) # wait for 'acquired' to be printed by subprocess
