@@ -27,6 +27,11 @@ logging.getLogger('zc.lockfile').setLevel(logging.ERROR+1)
 class FileLockTimeout(Exception):
     pass
 
+
+missing = object()
+"Sentinel for a missing attribute."
+
+
 class LockBase(object):
     def __init__(self, timeout=10, delay=.05):
         if isinstance(timeout, numbers.Number):
@@ -76,6 +81,13 @@ class LockBase(object):
             cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
         )
 
+    def release(self):
+        """
+        Release the lock and cleanup
+        """
+        lock = vars(self).pop('lock', missing)
+        lock is not missing and self._release(lock)
+
 
 class FileLock(LockBase):
     """
@@ -107,15 +119,10 @@ class FileLock(LockBase):
     def is_locked(self):
         return hasattr(self, 'lock')
 
-    def release(self):
-        """
-        Release the lock and delete the lockfile.
-        """
-        if self.is_locked():
-            self.lock.close()
-            del self.lock
-            with py33compat.suppress_file_not_found():
-                os.remove(self.lockfile)
+    def _release(self, lock):
+        lock.close()
+        with py33compat.suppress_file_not_found():
+            os.remove(self.lockfile)
 
 
 class ExclusiveContext(LockBase):
@@ -130,15 +137,10 @@ class ExclusiveContext(LockBase):
         super(ExclusiveContext, self).__init__(*args, **kwargs)
 
     def _attempt(self):
-        return zc.lockfile._lock_file(self.file)
+        zc.lockfile._lock_file(self.file)
 
     def is_locked(self):
         return hasattr(self, 'lock')
 
-    def release(self):
-        """
-        Release the lock and delete the lockfile.
-        """
-        if self.is_locked():
-            zc.lockfile._unlock_file(self.file)
-            del self.lock
+    def _release(self, lock):
+        zc.lockfile._unlock_file(self.file)
