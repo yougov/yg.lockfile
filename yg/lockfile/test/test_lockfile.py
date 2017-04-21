@@ -1,7 +1,6 @@
 import os
 import subprocess
 import itertools
-import tempfile
 import time
 import sys
 import textwrap
@@ -11,10 +10,8 @@ import pytest
 from yg.lockfile import FileLock, FileLockTimeout
 
 
-def test_FileLock_basic():
-    tfile, filename = tempfile.mkstemp()
-    os.close(tfile)
-    os.remove(filename)
+def test_FileLock_basic(tmpdir):
+    filename = str(tmpdir / 'lock')
     l = FileLock(filename)
     l2 = FileLock(filename, timeout=0.2)
     assert not l.is_locked()
@@ -54,14 +51,12 @@ def decoded_lines(stream):
     return (line.decode('utf-8-sig') for line in lines(stream))
 
 
-def test_FileLock_process_killed():
+def test_FileLock_process_killed(tmpdir):
     """
     If a subprocess fails to release the lock, it should be released
     and available for another process to take it.
     """
-    tfile, filename = tempfile.mkstemp()
-    os.close(tfile)
-    os.remove(filename)
+    filename = str(tmpdir / 'lock')
     script = textwrap.dedent("""
         from __future__ import print_function
         from yg.lockfile import FileLock
