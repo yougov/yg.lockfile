@@ -59,6 +59,23 @@ class LockBase(object):
             raise FileLockTimeout()
         time.sleep(self.delay.total_seconds())
 
+    def acquire(self):
+        """
+        Attempt to acquire the lock every `delay` seconds until the
+        lock is acquired or until `timeout` has expired.
+
+        Raises FileLockTimeout if the timeout is exceeded.
+
+        Errors opening the lock file (other than if it exists) are
+        passed through.
+        """
+        self.lock = retry_call(
+            self._attempt,
+            retries=float('inf'),
+            trap=zc.lockfile.LockError,
+            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
+        )
+
 
 class FileLock(LockBase):
     """
@@ -84,22 +101,8 @@ class FileLock(LockBase):
         self.lockfile = lockfile
         super(FileLock, self).__init__(*args, **kwargs)
 
-    def acquire(self):
-        """
-        Attempt to acquire the lock every `delay` seconds until the
-        lock is acquired or until `timeout` has expired.
-
-        Raises FileLockTimeout if the timeout is exceeded.
-
-        Errors opening the lock file (other than if it exists) are
-        passed through.
-        """
-        self.lock = retry_call(
-            functools.partial(zc.lockfile.LockFile, self.lockfile),
-            retries=float('inf'),
-            trap=zc.lockfile.LockError,
-            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
-        )
+    def _attempt(self):
+        return zc.lockfile.LockFile(self.lockfile)
 
     def is_locked(self):
         return hasattr(self, 'lock')
@@ -126,22 +129,8 @@ class ExclusiveContext(LockBase):
         self.file = file
         super(ExclusiveContext, self).__init__(*args, **kwargs)
 
-    def acquire(self):
-        """
-        Attempt to acquire the lock every `delay` seconds until the
-        lock is acquired or until `timeout` has expired.
-
-        Raises FileLockTimeout if the timeout is exceeded.
-
-        Errors opening the lock file (other than if it exists) are
-        passed through.
-        """
-        self.lock = retry_call(
-            functools.partial(zc.lockfile._lock_file, self.file),
-            retries=float('inf'),
-            trap=zc.lockfile.LockError,
-            cleanup=functools.partial(self._check_timeout, timing.Stopwatch()),
-        )
+    def _attempt(self):
+        return zc.lockfile._lock_file(self.file)
 
     def is_locked(self):
         return hasattr(self, 'lock')
