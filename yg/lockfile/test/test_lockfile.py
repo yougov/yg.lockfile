@@ -31,11 +31,10 @@ def test_FileLock_basic():
     assert l2.is_locked()
     l2.release()
 
+
 def lines(stream):
     """
-    I can't figure out how to get the subprocess module to feed me
-    line-buffered output from a sub-process, so I grab the output byte
-    by byte and assemble it into lines.
+    Buffer subprocess output byte-by-byte and assemble into lines.
     """
     buf = b''
     while True:
@@ -50,8 +49,10 @@ def lines(stream):
         if not dat:
             break
 
+
 def decoded_lines(stream):
     return (line.decode('utf-8-sig') for line in lines(stream))
+
 
 def _eggs_env():
     """
@@ -62,6 +63,7 @@ def _eggs_env():
     """
     local_eggs = [egg for egg in sys.path if '.eggs' in egg]
     return dict(PYTHONPATH=os.pathsep.join(local_eggs))
+
 
 def test_FileLock_process_killed():
     """
