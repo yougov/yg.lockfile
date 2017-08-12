@@ -32,7 +32,7 @@ params = dict(
 	python_requires='>=2.7',
 	install_requires=[
 		'zc.lockfile',
-		'jaraco.timing',
+		'tempora',
 		'jaraco.functools>=1.16',
 	],
 	extras_require={
