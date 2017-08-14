@@ -12,7 +12,7 @@ import datetime
 import logging
 
 import zc.lockfile
-from jaraco import timing
+from tempora import timing
 from jaraco.functools import retry_call
 
 from . import py33compat
