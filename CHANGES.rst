@@ -1,3 +1,15 @@
+2.3
+===
+
+#5: Prefer `tempora <https://pypi.org/project/tempora>`_ to
+jaraco.timing.
+
+#4: Consolidate acquire, release, and is_locked behavior into LockBase.
+Atomically remove lock attribute during release. Use jaraco.functools
+1.16 for the retry logic.
+
+Update package skeleton.
+
 2.2.2
 =====
 
