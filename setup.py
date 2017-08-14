@@ -36,6 +36,15 @@ params = dict(
 		'jaraco.functools>=1.16',
 	],
 	extras_require={
+		'testing': [
+			'pytest>=2.8',
+			'pytest-sugar',
+		],
+		'docs': [
+			'sphinx',
+			'jaraco.packaging>=3.2',
+			'rst.linker>=1.9',
+		],
 		py33: [
 			"contextlib2>=0.5",
 		],
