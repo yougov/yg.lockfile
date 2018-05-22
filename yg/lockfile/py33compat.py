@@ -5,7 +5,7 @@ import contextlib
 try:
 	suppress_file_not_found = functools.partial(
 		contextlib.suppress,
-		FileNotFoundError,
+		FileNotFoundError,  # noqa: F821
 	)
 except Exception:
 	# Python 3.3 doesn't have contextlib.suppress
