@@ -4,8 +4,10 @@ import itertools
 import time
 import sys
 import textwrap
+import datetime
 
 import pytest
+import tempora.timing
 
 from yg.lockfile import FileLock, FileLockTimeout
 
@@ -81,3 +83,18 @@ def test_FileLock_process_killed(tmpdir):
     time.sleep(.5)
     lock.acquire()
     lock.release()
+
+
+def test_FileLock_timeout_immediate(tmpdir):
+    """
+    FileLock with timeout of 0 should not block and raise
+    a timeout immediately.
+    """
+    filename = str(tmpdir / 'lock')
+    lock = FileLock(filename, timeout=0)
+    held = FileLock(filename)
+    held.acquire()
+    with tempora.timing.Stopwatch() as watch:
+        with pytest.raises(FileLockTimeout):
+            lock.acquire()
+    assert watch.elapsed < datetime.timedelta(milliseconds=10)
