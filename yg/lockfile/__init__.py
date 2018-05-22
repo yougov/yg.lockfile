@@ -21,7 +21,7 @@ from . import py33compat
 # disable the error reporting in zc.lockfile because it will
 #  just spew errors as we repeatedly attempt to acquire an
 #  unavailable lock.
-logging.getLogger('zc.lockfile').setLevel(logging.ERROR+1)
+logging.getLogger('zc.lockfile').setLevel(logging.ERROR + 1)
 
 
 class FileLockTimeout(Exception):

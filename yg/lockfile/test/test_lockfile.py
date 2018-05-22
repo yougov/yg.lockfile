@@ -12,18 +12,18 @@ from yg.lockfile import FileLock, FileLockTimeout
 
 def test_FileLock_basic(tmpdir):
     filename = str(tmpdir / 'lock')
-    l = FileLock(filename)
+    l1 = FileLock(filename)
     l2 = FileLock(filename, timeout=0.2)
-    assert not l.is_locked()
-    l.acquire()
-    assert l.is_locked()
-    l.release()
-    assert not l.is_locked()
-    with l:
+    assert not l1.is_locked()
+    l1.acquire()
+    assert l1.is_locked()
+    l1.release()
+    assert not l1.is_locked()
+    with l1:
         assert os.path.isfile(filename)
         with pytest.raises(FileLockTimeout):
             l2.acquire()
-    assert not l.is_locked()
+    assert not l1.is_locked()
     l2.acquire()
     assert l2.is_locked()
     l2.release()
@@ -71,13 +71,13 @@ def test_FileLock_process_killed(tmpdir):
     cmd = [sys.executable, '-u', '-c', script_cmd]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lines = decoded_lines(proc.stdout)
-    out = itertools.takewhile(lambda l: 'acquired' not in l, lines)
-    tuple(out) # wait for 'acquired' to be printed by subprocess
+    out = itertools.takewhile(lambda line: 'acquired' not in line, lines)
+    tuple(out)  # wait for 'acquired' to be printed by subprocess
 
-    l = FileLock(filename, timeout=0.2)
+    lock = FileLock(filename, timeout=0.2)
     with pytest.raises(FileLockTimeout):
-        l.acquire()
+        lock.acquire()
     proc.kill()
     time.sleep(.5)
-    l.acquire()
-    l.release()
+    lock.acquire()
+    lock.release()
