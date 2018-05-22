@@ -1,5 +1,5 @@
 .. image:: https://img.shields.io/pypi/v/yg.lockfile.svg
-:target: https://pypi.org/project/yg.lockfile
+   :target: https://pypi.org/project/yg.lockfile
 
 .. image:: https://img.shields.io/pypi/pyversions/yg.lockfile.svg
 
