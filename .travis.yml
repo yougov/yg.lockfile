@@ -1,24 +1,34 @@
+dist: trusty
 sudo: false
 language: python
+
 python:
 - 2.7
-- 3.6
+- &latest_py3 3.6
+
+jobs:
+  fast_finish: true
+  include:
+  - stage: deploy
+    if: tag IS present
+    python: *latest_py3
+    install: skip
+    script: skip
+    deploy:
+      provider: pypi
+      on:
+        tags: true
+        all_branches: true
+      user: jaraco
+      password:
+        secure: UbrYL3KT9UMc7YgLbtQv0OzEoQN6we5L7GVTCOnf3PS4CdTmqL/H3IBfDS66XEAUUl1qe7TO3gfxNYRUoveALG4OBEoxHRYxhOsjoYJzCtl0qeU1bjJCi46wJBmtVoQlgZSX6jgANMxyfqMTt/BCGw7opFYc5n9CEhja4b+ynVDvsKoNj4ODQgDpKhLkgWkGEg2mSOWkgb/581W+HVJ1L59eUT6s0iD2yLpEwwHb6TXcvj/UPcXneHFLJ0k8vvUCnae7gCvg7h7d9FULKBOJc7rYknpl4oXqyq6FpYqg4aVrq9GZS4Atln76iIkS6Muj46/9oPYZmMFg/AUTQ3WEI4o5Fy0pX/GErzcz/QgB0N3TjC8gJuG7qhAN+bbqS1ocQ5tU1BPRv8UNUjZTbOoAfWsFB/gup8MLE8aLYieOu7hMSaTJkQNS3ZxRPUzU9zGfs0LgxRrrFLYzUfi2eh5SS4tLxtXk23EqHPKuNdiGFH0UU10PinEEHhTXTWmsuPl1349L8rAAXjUz+ZB0wzjxLKxseGtxk6eyK6sz8aU7905393T2dS7ZmR7a2/QKClJR8enOrlRHiryujV04xwXd7noEflHzXEjRJFGPR4cOW0mDp2bStAbddetvOMZDuvwbfXjXlmmz/ZybAUw3t7nEFvETfNeL1jezQ3caGLKXOrU=
+      distributions: dists
+      skip_cleanup: true
+      skip_upload_docs: true
+
+cache: pip
+
 install:
-- pip install tox "setuptools>=28.2"
-script:
-- tox
-branches:
-  except:
-  - skeleton
-deploy:
-  provider: pypi
-  server: https://upload.pypi.org/legacy/
-  on:
-    tags: true
-    all_branches: true
-    python: 3.6
-  user: jaraco
-  distributions: dists
-  skip_upload_docs: true
-  password:
-    secure: UbrYL3KT9UMc7YgLbtQv0OzEoQN6we5L7GVTCOnf3PS4CdTmqL/H3IBfDS66XEAUUl1qe7TO3gfxNYRUoveALG4OBEoxHRYxhOsjoYJzCtl0qeU1bjJCi46wJBmtVoQlgZSX6jgANMxyfqMTt/BCGw7opFYc5n9CEhja4b+ynVDvsKoNj4ODQgDpKhLkgWkGEg2mSOWkgb/581W+HVJ1L59eUT6s0iD2yLpEwwHb6TXcvj/UPcXneHFLJ0k8vvUCnae7gCvg7h7d9FULKBOJc7rYknpl4oXqyq6FpYqg4aVrq9GZS4Atln76iIkS6Muj46/9oPYZmMFg/AUTQ3WEI4o5Fy0pX/GErzcz/QgB0N3TjC8gJuG7qhAN+bbqS1ocQ5tU1BPRv8UNUjZTbOoAfWsFB/gup8MLE8aLYieOu7hMSaTJkQNS3ZxRPUzU9zGfs0LgxRrrFLYzUfi2eh5SS4tLxtXk23EqHPKuNdiGFH0UU10PinEEHhTXTWmsuPl1349L8rAAXjUz+ZB0wzjxLKxseGtxk6eyK6sz8aU7905393T2dS7ZmR7a2/QKClJR8enOrlRHiryujV04xwXd7noEflHzXEjRJFGPR4cOW0mDp2bStAbddetvOMZDuvwbfXjXlmmz/ZybAUw3t7nEFvETfNeL1jezQ3caGLKXOrU=
+- pip install tox tox-venv
+
+script: tox

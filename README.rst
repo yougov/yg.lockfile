@@ -1,22 +1,20 @@
 .. image:: https://img.shields.io/pypi/v/yg.lockfile.svg
-   :target: https://pypi.org/project/yg.lockfile
+:target: https://pypi.org/project/yg.lockfile
 
 .. image:: https://img.shields.io/pypi/pyversions/yg.lockfile.svg
 
-.. image:: https://img.shields.io/pypi/dm/yg.lockfile.svg
-
 .. image:: https://img.shields.io/travis/yougov/yg.lockfile/master.svg
-   :target: http://travis-ci.org/yougov/yg.lockfile
+   :target: https://travis-ci.org/yougov/yg.lockfile
+
+.. .. image:: https://img.shields.io/appveyor/ci/jaraco/skeleton/master.svg
+..    :target: https://ci.appveyor.com/project/jaraco/skeleton/branch/master
+
+.. .. image:: https://readthedocs.org/projects/skeleton/badge/?version=latest
+..    :target: https://skeleton.readthedocs.io/en/latest/?badge=latest
+
 
 A FileLock class that implements a context manager with timeouts on top of
 `zc.lockfile`, an excellent, cross-platorm implementation of file locking.
-
-License
-=======
-
-License is indicated in the project metadata (typically one or more
-of the Trove classifiers). For more details, see `this explanation
-<https://github.com/jaraco/skeleton/issues/1>`_.
 
 Usage
 =====

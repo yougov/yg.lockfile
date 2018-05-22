@@ -11,6 +11,11 @@ with io.open('README.rst', encoding='utf-8') as readme:
 
 name = 'yg.lockfile'
 description = 'Lockfile object with timeouts and context manager'
+nspkg_technique = 'managed'
+"""
+Does this package use "native" namespace packages or
+pkg_resources "managed" namespace packages?
+"""
 
 py33_markers = [
 	'python_version=="{ver}"'.format(**locals())
@@ -28,7 +33,10 @@ params = dict(
 	url="https://github.com/yougov/" + name,
 	packages=setuptools.find_packages(),
 	include_package_data=True,
-	namespace_packages=name.split('.')[:-1],
+	namespace_packages=(
+		name.split('.')[:-1] if nspkg_technique == 'managed'
+		else []
+	),
 	python_requires='>=2.7',
 	install_requires=[
 		'zc.lockfile',
@@ -37,13 +45,21 @@ params = dict(
 	],
 	extras_require={
 		'testing': [
-			'pytest>=2.8',
-			'pytest-sugar',
+			# upstream
+			'pytest>=3.5',
+			'pytest-sugar>=0.9.1',
+			'collective.checkdocs',
+			'pytest-flake8',
+
+			# local
 		],
 		'docs': [
+			# upstream
 			'sphinx',
 			'jaraco.packaging>=3.2',
 			'rst.linker>=1.9',
+
+			# local
 		],
 		py33: [
 			"contextlib2>=0.5",
